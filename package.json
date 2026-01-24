@@ -1,0 +1,41 @@
+{
+  "name": "brick-break",
+  "version": "1.0.0",
+  "description": "Play a Lego break sound when your build fails",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "brick-break": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "sound.mp3"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "build",
+    "lego",
+    "sound",
+    "error",
+    "fun",
+    "developer-experience",
+    "nextjs"
+  ],
+  "author": "ShinniUwU",
+  "license": "MIT",
+  "homepage": "https://github.com/ShinniUwU/brick-break#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShinniUwU/brick-break.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ShinniUwU/brick-break/issues"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}
