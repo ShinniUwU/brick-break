@@ -27,14 +27,29 @@ or just run it directly:
 npx brick-break next build
 ```
 
+## global install (recommended for non-js projects)
+
+```bash
+npm i -g brick-break
+```
+
+now you can use `bb` anywhere:
+
+```bash
+bb cargo build
+bb go build
+bb pytest
+bb make
+```
+
 ## works with everything
 
 ```bash
-brick-break next build
-brick-break npm run build
-brick-break tsc
-brick-break cargo build
-brick-break go build
+bb next build
+bb npm run build
+bb tsc
+bb cargo build
+bb go build
 ```
 
 if it can fail, brick-break can make it funnier.
