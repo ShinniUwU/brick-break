@@ -20,10 +20,10 @@ export function BrickBreak({ children }: { children?: ReactNode }) {
     if (process.env.NODE_ENV !== 'development') return
 
     const observer = new MutationObserver(() => {
-      // nextjs error overlay
-      const dialog = document.querySelector('[data-nextjs-dialog]')
-      if (dialog) {
-        const errorText = dialog.textContent || ''
+      // nextjs error overlay (nextjs 16+ uses nextjs-portal)
+      const portal = document.querySelector('nextjs-portal')
+      if (portal) {
+        const errorText = portal.textContent || ''
         if (!seenErrors.current.has(errorText)) {
           seenErrors.current.add(errorText)
           playSound()

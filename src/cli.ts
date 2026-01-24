@@ -56,13 +56,24 @@ if (args[0] === 'init') {
   process.exit(0)
 }
 
-// detect next.js dev mode
+// detect next.js dev mode - show hint if not already setup
 const isNextDev = args.some(a => a.includes('next')) && args.some(a => a === 'dev')
 
 if (isNextDev) {
-  console.log('\x1b[36m')
-  console.log('brick-break: for hmr error sounds, run: bb init')
-  console.log('\x1b[0m')
+  const layoutPaths = [
+    join(process.cwd(), 'app/layout.tsx'),
+    join(process.cwd(), 'src/app/layout.tsx'),
+    join(process.cwd(), 'app/layout.jsx'),
+    join(process.cwd(), 'src/app/layout.jsx'),
+  ]
+  const layoutPath = layoutPaths.find(p => existsSync(p))
+  const alreadySetup = layoutPath && readFileSync(layoutPath, 'utf-8').includes('brick-break')
+
+  if (!alreadySetup) {
+    console.log('\x1b[36m')
+    console.log('brick-break: for hmr error sounds, run: bb init')
+    console.log('\x1b[0m')
+  }
 }
 
 runCommand(args)
