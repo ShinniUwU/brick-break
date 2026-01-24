@@ -5,8 +5,15 @@
       "name": "lego-break",
       "devDependencies": {
         "@types/node": "^20.0.0",
+        "@types/react": "^18.0.0",
         "typescript": "^5.0.0"
-      }
+      },
+      "peerDependencies": {
+        "react": ">=18.0.0"
+      },
+      "optionalPeers": [
+        "react"
+      ]
     }
   },
   "packages": {
@@ -19,6 +26,29 @@
         }
       },
       "sha512-WJtwWJu7UdlvzEAUm484QNg5eAoq5QR08KDNx7g45Usrs2NtOPiX8ugDqmKdXkyL03rBqU5dYNYVQetEpBHq2g=="
+    ],
+    "@types/prop-types": [
+      "@types/prop-types@15.7.15",
+      "",
+      {},
+      "sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw=="
+    ],
+    "@types/react": [
+      "@types/react@18.3.27",
+      "",
+      {
+        "dependencies": {
+          "@types/prop-types": "*",
+          "csstype": "^3.2.2"
+        }
+      },
+      "sha512-cisd7gxkzjBKU2GgdYrTdtQx1SORymWyaAFhaxQPK9bYO9ot3Y5OikQRvY0VYQtvwjeQnizCINJAenh/V7MK2w=="
+    ],
+    "csstype": [
+      "csstype@3.2.3",
+      "",
+      {},
+      "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="
     ],
     "typescript": [
       "typescript@5.9.3",

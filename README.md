@@ -54,11 +54,35 @@ bb go build
 
 if it can fail, brick-break can make it funnier.
 
+## next.js hmr support
+
+for errors that happen while the dev server is running (hot reload), add the component to your layout:
+
+```tsx
+// app/layout.tsx
+import { BrickBreak } from 'brick-break/next'
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        <BrickBreak />
+        {children}
+      </body>
+    </html>
+  )
+}
+```
+
+now errors play the sound even during hot reload.
+
 ## how it works
 
 1. runs your command
 2. build fails? plays the sound
 3. thats it
+
+(for next.js hmr: watches for the error overlay in the browser)
 
 ## requirements
 
