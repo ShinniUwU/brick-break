@@ -56,7 +56,15 @@ if it can fail, brick-break can make it funnier.
 
 ## next.js hmr support
 
-for errors that happen while the dev server is running (hot reload), add the component to your layout:
+for errors that happen while the dev server is running (hot reload):
+
+```bash
+bb init
+```
+
+this automatically adds `<BrickBreak />` to your layout.tsx.
+
+or add it manually:
 
 ```tsx
 // app/layout.tsx
