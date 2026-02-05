@@ -62,8 +62,13 @@ export function runCommand(args: string[]) {
   })
 
   proc.on('close', code => {
-    if (code !== 0) playSound()
-    process.exit(code ?? 1)
+    if (code !== 0) {
+      playSound()
+      // give the audio player time to start before exiting
+      setTimeout(() => process.exit(code ?? 1), 500)
+    } else {
+      process.exit(0)
+    }
   })
 
   proc.on('error', err => {

@@ -1,0 +1,152 @@
+diff --git a/.gitignore b/.gitignore
+index b947077..d34ad54 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,3 @@
+ node_modules/
+ dist/
++.claude/
+diff --git a/package.json b/package.json
+index bb71b8f..41036da 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "brick-break",
+-  "version": "1.3.1",
++  "version": "1.4.0",
+   "description": "Play a Lego break sound when your build fails",
+   "main": "dist/index.js",
+   "types": "dist/index.d.ts",
+diff --git a/src/cli.ts b/src/cli.ts
+index db148e3..690b87e 100644
+--- a/src/cli.ts
++++ b/src/cli.ts
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env node
+ import { runCommand } from './index'
++import { execSync } from 'child_process'
+ import { existsSync, readFileSync, writeFileSync } from 'fs'
+ import { join } from 'path'
+ 
+@@ -52,6 +53,33 @@ if (args[0] === 'init') {
+ 
+   writeFileSync(layoutPath, content)
+   console.log('\x1b[32m✓ added BrickBreak to ' + layoutPath + '\x1b[0m')
++
++  // install brick-break as a local dev dependency so the import resolves
++  const pkgPath = join(process.cwd(), 'package.json')
++  if (existsSync(pkgPath)) {
++    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
++    const deps = { ...pkg.dependencies, ...pkg.devDependencies }
++    if (!deps['brick-break']) {
++      const cwd = process.cwd()
++      let cmd: string
++      if (existsSync(join(cwd, 'bun.lock')) || existsSync(join(cwd, 'bun.lockb'))) {
++        cmd = 'bun add -d brick-break'
++      } else if (existsSync(join(cwd, 'pnpm-lock.yaml'))) {
++        cmd = 'pnpm add -D brick-break'
++      } else if (existsSync(join(cwd, 'yarn.lock'))) {
++        cmd = 'yarn add -D brick-break'
++      } else {
++        cmd = 'npm install -D brick-break'
++      }
++      console.log(`\x1b[36minstalling brick-break locally...\x1b[0m`)
++      try {
++        execSync(cmd, { cwd, stdio: 'inherit' })
++      } catch {
++        console.log(`\x1b[31mfailed to install. run manually: ${cmd}\x1b[0m`)
++      }
++    }
++  }
++
+   console.log('hmr errors will now play the sound')
+   process.exit(0)
+ }
+diff --git a/src/index.ts b/src/index.ts
+index 4b4857a..2d6a29e 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -62,8 +62,13 @@ export function runCommand(args: string[]) {
+   })
+ 
+   proc.on('close', code => {
+-    if (code !== 0) playSound()
+-    process.exit(code ?? 1)
++    if (code !== 0) {
++      playSound()
++      // give the audio player time to start before exiting
++      setTimeout(() => process.exit(code ?? 1), 500)
++    } else {
++      process.exit(0)
++    }
+   })
+ 
+   proc.on('error', err => {
+diff --git a/src/next.tsx b/src/next.tsx
+index baae7cb..577bc1a 100644
+--- a/src/next.tsx
++++ b/src/next.tsx
+@@ -19,20 +19,53 @@ export function BrickBreak({ children }: { children?: ReactNode }) {
+   useEffect(() => {
+     if (process.env.NODE_ENV !== 'development') return
+ 
+-    const observer = new MutationObserver(() => {
+-      // nextjs error overlay (nextjs 16+ uses nextjs-portal)
++    let shadowObserver: MutationObserver | null = null
++
++    function checkForErrors() {
+       const portal = document.querySelector('nextjs-portal')
+-      if (portal) {
+-        const errorText = portal.textContent || ''
+-        if (!seenErrors.current.has(errorText)) {
+-          seenErrors.current.add(errorText)
+-          playSound()
++      if (!portal) {
++        seenErrors.current.clear()
++        if (shadowObserver) {
++          shadowObserver.disconnect()
++          shadowObserver = null
++        }
++        return
++      }
++
++      // next.js renders the error overlay inside a shadow root
++      const root = portal.shadowRoot
++      if (!root) return
++
++      // only trigger on the actual error dialog, not the dev indicator
++      const dialog = root.querySelector('dialog') ?? root.querySelector('[role="dialog"]')
++      if (!dialog) {
++        // observe inside the shadow root so we catch when the dialog appears
++        if (!shadowObserver) {
++          shadowObserver = new MutationObserver(checkForErrors)
++          shadowObserver.observe(root, { childList: true, subtree: true })
+         }
++        return
+       }
+-    })
+ 
++      const errorText = dialog.textContent || ''
++      if (errorText && !seenErrors.current.has(errorText)) {
++        seenErrors.current.add(errorText)
++        playSound()
++      }
++
++      if (!shadowObserver) {
++        shadowObserver = new MutationObserver(checkForErrors)
++        shadowObserver.observe(root, { childList: true, subtree: true })
++      }
++    }
++
++    const observer = new MutationObserver(checkForErrors)
+     observer.observe(document.body, { childList: true, subtree: true })
+-    return () => observer.disconnect()
++
++    return () => {
++      observer.disconnect()
++      shadowObserver?.disconnect()
++    }
+   }, [])
+ 
+   return <>{children}</>

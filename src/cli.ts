@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { runCommand } from './index'
+import { execSync } from 'child_process'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 
@@ -52,6 +53,33 @@ if (args[0] === 'init') {
 
   writeFileSync(layoutPath, content)
   console.log('\x1b[32m✓ added BrickBreak to ' + layoutPath + '\x1b[0m')
+
+  // install brick-break as a local dev dependency so the import resolves
+  const pkgPath = join(process.cwd(), 'package.json')
+  if (existsSync(pkgPath)) {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies }
+    if (!deps['brick-break']) {
+      const cwd = process.cwd()
+      let cmd: string
+      if (existsSync(join(cwd, 'bun.lock')) || existsSync(join(cwd, 'bun.lockb'))) {
+        cmd = 'bun add -d brick-break'
+      } else if (existsSync(join(cwd, 'pnpm-lock.yaml'))) {
+        cmd = 'pnpm add -D brick-break'
+      } else if (existsSync(join(cwd, 'yarn.lock'))) {
+        cmd = 'yarn add -D brick-break'
+      } else {
+        cmd = 'npm install -D brick-break'
+      }
+      console.log(`\x1b[36minstalling brick-break locally...\x1b[0m`)
+      try {
+        execSync(cmd, { cwd, stdio: 'inherit' })
+      } catch {
+        console.log(`\x1b[31mfailed to install. run manually: ${cmd}\x1b[0m`)
+      }
+    }
+  }
+
   console.log('hmr errors will now play the sound')
   process.exit(0)
 }
