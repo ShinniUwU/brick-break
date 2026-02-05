@@ -36,18 +36,11 @@ export function BrickBreak({ children }: { children?: ReactNode }) {
       const root = portal.shadowRoot
       if (!root) return
 
-      // only trigger on the actual error dialog, not the dev indicator
-      const dialog = root.querySelector('dialog') ?? root.querySelector('[role="dialog"]')
-      if (!dialog) {
-        // observe inside the shadow root so we catch when the dialog appears
-        if (!shadowObserver) {
-          shadowObserver = new MutationObserver(checkForErrors)
-          shadowObserver.observe(root, { childList: true, subtree: true })
-        }
-        return
-      }
+      // next.js sets this data attribute on the error overlay
+      const errorContainer = root.querySelector('[data-nextjs-dialog-overlay]')
+      if (!errorContainer) return
 
-      const errorText = dialog.textContent || ''
+      const errorText = errorContainer.textContent || ''
       if (errorText && !seenErrors.current.has(errorText)) {
         seenErrors.current.add(errorText)
         playSound()
